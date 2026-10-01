@@ -1,0 +1,60 @@
+# Farmer Registry Dashboard
+
+Aggregate dashboard for the Farmer Registry: farmers by region (map with
+drill-down to kebele), farmer type, age and gender, education, land tenure and
+registrations over time. A standalone service, reached from the registry's staff portal as a tile
+and open only to users with the **Dashboard Viewer** role.
+
+See [docs/architecture.md](docs/architecture.md) for how access, data and IAM
+registration work.
+
+## Run
+
+```bash
+cp .env.example .env.local    # point it at a dashboard-api and an IAM
+npm ci
+npm run dev                   # http://localhost:3000
+```
+
+The dashboard needs:
+
+- the registry's **dashboard-api** (`DASHBOARD_API_URL`), which serves the chart
+  rows from the registry's reporting views;
+- the registry's **IAM** (`IAM_URL`) for login and roles. For UI work without
+  one, set `AUTH_ENABLED=false` (never in a deployment).
+
+Container image:
+
+```bash
+docker build -t farmer-registry-dashboard .
+docker run --env-file .env.local -p 3000:3000 farmer-registry-dashboard
+```
+
+Register the tile and role with IAM (idempotent), from the same image:
+
+```bash
+docker run --rm --env-file .env.local \
+  -e IAM_REGISTER_URL=... -e TOKEN_URL=... -e DASHBOARD_CLIENT_SECRET=... \
+  -e APP_DESCRIPTION="Farmer Dashboard" \
+  farmer-registry-dashboard node iam/register.mjs
+```
+
+## Checks
+
+```bash
+npm run typecheck
+npm run lint
+npm run build
+```
+
+## Layout
+
+| Path | What |
+| --- | --- |
+| `app/` | pages, the `/api` mount, map and auth routes |
+| `components/farmer-overview-dashboard.tsx` | the registry view |
+| `components/dashboard-shell.tsx` | header and filter bar |
+| `components/registry/`, `components/ethiopia-map.tsx` | panel kit, map, export |
+| `server/data/` | chart catalog, `ChartSource` and the cache |
+| `server/auth/session.ts`, `proxy.ts` | session and role check |
+| `iam/` | IAM catalog and registration script |
