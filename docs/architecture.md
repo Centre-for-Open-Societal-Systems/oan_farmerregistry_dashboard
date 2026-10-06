@@ -87,14 +87,16 @@ dashboard-api drops it and retries once.
 
 The dashboard-api accepts the token when it carries its client role (default
 `charts:read` on the client `farmer-registry-dashboard-api`) and was issued by
-its `AUTH_ISSUER`. The IAM setup job creates that client and role and grants
+an issuer it trusts. The IAM setup job creates that client and role and grants
 the role to this dashboard's service account (`iam/keycloak-setup.mjs`), so
 Keycloak adds both the audience and the role to the token by itself.
 
 The token endpoint is `OIDC_TOKEN_URL`, or that of the realm IAM signs staff in
-with, discovered once like the login provider. Keycloak writes the URL a token
-was requested at into its `iss`, so the dashboard-api's `AUTH_ISSUER` must be
-that endpoint's realm URL, host and port included.
+with, discovered once like the login provider. The dashboard-api, given the
+same IAM (`AUTH_IAM_URL`), trusts every realm IAM's login providers sign staff
+in with, so neither side configures a realm URL. Keycloak writes the URL a
+token was requested at into its `iss`, so with an explicit `OIDC_TOKEN_URL` the
+dashboard-api must trust that realm URL, host and port included.
 
 `/health` of the dashboard-api needs no token, so `/api/health` here works the
 same in both modes.

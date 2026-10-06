@@ -10,9 +10,10 @@
 //
 // The token is reused until shortly before it expires, and concurrent callers
 // share one request. Its endpoint is OIDC_TOKEN_URL or, by default, that of the
-// realm IAM signs staff in with, discovered once. Keycloak sets a token's `iss`
-// from the URL it was requested at, so the dashboard-api's AUTH_ISSUER must be
-// this endpoint's realm URL.
+// realm IAM signs staff in with, discovered once. The dashboard-api trusts the
+// realms of the same IAM (its AUTH_IAM_URL), so neither side configures a realm
+// URL. Keycloak sets a token's `iss` from the URL it was requested at, so an
+// explicit OIDC_TOKEN_URL must name a realm the dashboard-api trusts.
 import { config } from "../config"
 import { loginProviderId, startSignIn } from "./login-provider"
 

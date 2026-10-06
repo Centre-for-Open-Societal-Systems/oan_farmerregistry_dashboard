@@ -131,9 +131,14 @@ Off by default, so an existing release behaves as before. To turn it on:
    creates the client `farmer-registry-dashboard-api` with the role
    `charts:read` and grants it to the dashboard's service account; the server
    starts sending tokens.
-2. Set `AUTH_ISSUER` on the dashboard-api to the realm URL those tokens come
-   from (the server logs `dashboard-api tokens from <url>` at the first
-   refresh). In the farmer registry chart: `dashboardApi.env.AUTH_ISSUER`.
+2. Set `AUTH_IAM_URL` on the dashboard-api to the registry's IAM Service in
+   the same namespace (in the farmer registry chart:
+   `dashboardApi.env.AUTH_IAM_URL`). It then trusts every realm IAM signs staff
+   in with, including the one this dashboard gets its tokens from (logged as
+   `dashboard-api tokens from <url>`), so no realm URL is configured.
+
+The development pipeline passes `dashboardApi.auth.enabled=true`, so step 1 is
+done on every dev deploy.
 
 Until step 2 the dashboard-api ignores the tokens. Done the other way round,
 chart refreshes fail with `401` and the dashboard keeps serving its cached
@@ -154,7 +159,7 @@ Where the pod runs does not matter to sign-in; what matters is:
 | The server reaches IAM | Sign-in start, session check and sign-out are server-to-server calls | `iam.service`: `<service>.<namespace>` from another namespace; `iam.url` (IAM's private or public URL) from another cluster or server |
 | The cookie domain is known | The chart reads it from the IAM Deployment in its own namespace | `iam.cookieDomain` |
 | Keycloak setup can run | The job needs the Keycloak admin Secret in its namespace and a route to Keycloak | `iamSetup.keycloakAdmin.secret`, or `iamSetup.enabled=false` with the setup done once from the registry's namespace |
-| The dashboard-api is reachable, and only by this dashboard | Its Service is cluster-internal, and it must never be public | `dashboardApi.url`: `http://<service>.<namespace>` from another namespace; from another cluster or server, a private route (VPN, private load balancer, internal gateway behind an allowlist) over TLS, **with `dashboardApi.auth.enabled`** and the dashboard-api's `AUTH_ISSUER` set |
+| The dashboard-api is reachable, and only by this dashboard | Its Service is cluster-internal, and it must never be public | `dashboardApi.url`: `http://<service>.<namespace>` from another namespace; from another cluster or server, a private route (VPN, private load balancer, internal gateway behind an allowlist) over TLS, **with `dashboardApi.auth.enabled`** and the dashboard-api's authentication on (`AUTH_IAM_URL` or `AUTH_ISSUER`) |
 
 ## Running it locally
 

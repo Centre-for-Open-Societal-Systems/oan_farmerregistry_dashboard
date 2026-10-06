@@ -58,10 +58,10 @@ export class HttpChartSource implements ChartSource {
 function hint(status: number, withToken: boolean): string {
   if (status === 401) {
     return withToken
-      ? " (token rejected: is the dashboard-api's AUTH_ISSUER the realm this dashboard gets tokens from?)"
+      ? " (token rejected: does the dashboard-api trust the realm this dashboard gets tokens from? See its AUTH_IAM_URL)"
       : " (the dashboard-api requires a token: set DASHBOARD_API_AUTH=client-credentials)"
   }
   if (status === 403) return " (this dashboard's Keycloak client lacks the dashboard-api's role)"
-  if (status === 503) return " (the dashboard-api cannot fetch its token signing keys)"
+  if (status === 503) return " (the dashboard-api cannot read its trusted issuers from IAM, or their signing keys)"
   return ""
 }

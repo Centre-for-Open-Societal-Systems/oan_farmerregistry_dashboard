@@ -55,16 +55,16 @@ dashboardApi:
   # client-credentials token of this dashboard's Keycloak client
   # (access.clientId), and the IAM setup job creates the dashboard-api's client
   # and role below and grants the role to this dashboard's service account.
-  # Turn on together with AUTH_ISSUER on the dashboard-api (required once it is
-  # reached from outside its cluster).
+  # Turn on together with the dashboard-api's own authentication
+  # (AUTH_IAM_URL); required once it is reached from outside its cluster. The
+  # development pipeline turns it on.
   auth:
     enabled: false
     # The dashboard-api's AUTH_AUDIENCE and AUTH_ROLE.
     clientId: farmer-registry-dashboard-api
     role: charts:read
     # Keycloak token endpoint. Empty: that of the realm IAM signs staff in
-    # with (discovered). Its realm URL is the issuer the dashboard-api must be
-    # given as AUTH_ISSUER.
+    # with (discovered), which the dashboard-api trusts through the same IAM.
     tokenUrl: ""
 
 # Seconds chart rows are served before a background refresh (min 60).
